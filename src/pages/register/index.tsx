@@ -18,22 +18,23 @@ import {
   DatePicker,
   Input,
   Page,
-  Text
+  Text,
+  useNavigate
 } from "zmp-ui";
 
-import MultiSelect from "../components/MultiSelect";
+import MultiSelect from "../../components/MultiSelect";
 import {
   cmktLevelOptions,
   desiredJobList,
   educationLevelOptions,
   ethnicityOptions,
   genderOptions,
-} from "../data/formOptions";
+} from "../../data/formOptions";
 
 
-import InputBox from "../components/InputBox";
-import SingleSelect from "../components/SingleSelect";
-import { useRegisterForm } from "../hooks/useRegisterForm";
+import InputBox from "../../components/InputBox";
+import SingleSelect from "../../components/SingleSelect";
+import { useRegisterForm } from "../../hooks/useRegisterForm";
 
 const { Password } = Input;
 
@@ -43,7 +44,7 @@ const LoginInfoSection: React.FC<{
   handleInputChange: any;
   handleInputBlur: any;
 }> = ({ formData, touched, handleInputChange, handleInputBlur }) => (
-  <Box className="space-y-4 ">
+  <Box className="space-y-4">
     <Text className="text-lg font-semibold text-gray-700">
       Thông tin đăng nhập
     </Text>
@@ -348,6 +349,7 @@ const PersonalInfoSection: React.FC<any> = (props) => (
 );
 
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
   const {
     formData,
     touched,
@@ -410,7 +412,8 @@ const HomePage: React.FC = () => {
               <Button className="btn-sky">
                 Đăng Ký Cho Nhà Tuyển Dụng
               </Button>
-              <Button className="btn-blue">
+              <Button className="btn-blue" onClick={() => navigate("/login")}
+              >
                 Quay Lại Đăng Nhập
               </Button>
             </div>
