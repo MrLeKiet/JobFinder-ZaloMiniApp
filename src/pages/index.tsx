@@ -8,12 +8,10 @@ import {
   Mail,
   MapPin,
   Phone,
-  Square,
-  SquareCheck,
   User,
   Venus
 } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   Button,
@@ -23,301 +21,46 @@ import {
   Text
 } from "zmp-ui";
 
+import MultiSelect from "../components/MultiSelect";
+import {
+  cmktLevelOptions,
+  desiredJobList,
+  educationLevelOptions,
+  ethnicityOptions,
+  genderOptions,
+} from "../data/formOptions";
 
-
-// Custom bottom sheet select for desired job
-const desiredJobList = [
-  "Kỹ sư phần mềm",
-  "Nhân viên kinh doanh",
-  "Kế toán",
-  "Thiết kế đồ họa",
-  "Quản trị dự án",
-  "Nhân sự",
-  "Khác",
-];
-
-// Custom bottom sheet select component
-type CustomBottomSheetSelectProps = {
-  options: string[];
-  value: string[];
-  onChange: (selected: string[]) => void;
-  max?: number;
-  placeholder?: string;
-};
-
-const CustomBottomSheetSelect: React.FC<CustomBottomSheetSelectProps> = ({ options, value, onChange, max = 2, placeholder }) => {
-  const [open, setOpen] = React.useState(false);
-  const [internal, setInternal] = React.useState<string[]>(value || []);
-  const [search, setSearch] = React.useState("");
-
-  React.useEffect(() => {
-    setInternal(value || []);
-  }, [value]);
-
-  const handleSelect = (option: string) => {
-    let next: string[];
-    if (internal.includes(option)) {
-      next = internal.filter((v) => v !== option);
-    } else if (internal.length < max) {
-      next = [...internal, option];
-    } else {
-      next = internal;
-    }
-    setInternal(next);
-    onChange(next);
-  };
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        className="w-full min-h-[40px] flex items-center border border-gray-300 rounded px-2 bg-white cursor-pointer"
-        onClick={handleOpen}
-        tabIndex={0}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onKeyDown={e => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleOpen();
-          }
-        }}
-      >
-        <span className={internal.length === 0 ? 'text-gray-400' : ''}>
-          {internal.length === 0 ? placeholder : internal.join(', ')}
-        </span>
-      </button>
-      {open && (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 bg-black bg-opacity-30 z-40"
-            onClick={handleClose}
-            aria-label="Đóng"
-            tabIndex={0}
-            style={{ border: 'none', padding: 0, margin: 0, background: 'none' }}
-            onKeyDown={e => {
-              if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
-                e.preventDefault();
-                handleClose();
-              }
-            }}
-          />
-          <div
-            className="fixed left-0 right-0 bottom-0 z-50"
-            style={{ transition: 'transform 0.3s cubic-bezier(.4,0,.2,1)', transform: open ? 'translateY(0)' : 'translateY(100%)' }}
-          >
-            <div className="bg-white rounded-t-2xl shadow-lg p-4 h-[50vh]">
-              <div className="flex justify-between items-center mb-4">
-                <span className="font-semibold">Chọn ngành nghề (tối đa {max})</span>
-                <button onClick={handleClose} className="text-2xl leading-none">&times;</button>
-              </div>
-              <input
-                type="text"
-                className="w-full mb-3 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring"
-                placeholder="Tìm kiếm..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                autoFocus
-              />
-              <ul className="space-y-2 overflow-y-auto h-[calc(50vh-140px)]">
-                {options.filter(option => option.toLowerCase().includes(search.toLowerCase())).map((option) => {
-                  const isSelected = internal.includes(option);
-                  const isDisabled = !isSelected && internal.length >= max;
-                  return (
-                    <button
-                      type="button"
-                      key={option}
-                      className={`w-full text-left py-3 px-2 rounded flex items-center justify-between gap-4 transition-colors ${isSelected ? 'text-blue-600 font-semibold' : ''} ${isDisabled ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100'}`}
-                      onClick={() => !isDisabled && handleSelect(option)}
-                      onKeyDown={e => {
-                        if ((e.key === "Enter" || e.key === " ") && !isDisabled) {
-                          e.preventDefault();
-                          handleSelect(option);
-                        }
-                      }}
-                      disabled={isDisabled}
-                      tabIndex={isDisabled ? -1 : 0}
-                    >
-                      <span className="flex-1">{option}</span>
-                      {isSelected ? (
-                        <SquareCheck size={20} className="text-blue-600 ml-2" />
-                      ) : (
-                        <Square size={20} className="text-gray-400 ml-2" />
-                      )}
-                    </button>
-                  );
-                })}
-              </ul>
-              <div className="pb-8">
-                <button className="">
-                  Xác nhận
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </>
-  );
-};
 
 import ReactSelect from "react-select";
+import InputBox from "../components/InputBox";
+import customSelectStyles from "../data/selectStyles";
+import { useRegisterForm } from "../hooks/useRegisterForm";
 
 const { Password } = Input;
 
-const InputBox: React.FC<{
-  label: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  error?: boolean;
-  errorMessage?: string;
-}> = ({ label, icon, children, error, errorMessage }) => (
-  <Box className="space-y-1 mb-4">
-    <Text className="text-sm font-medium text-gray-600">{label}</Text>
-    <Box
-      className={`flex items-center border rounded-md px-3 min-h-[50px] h-[50px] ${error ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
-        }`}
-    >
-      <span className={`mr-2 flex items-center ${error ? 'text-red-500' : 'text-gray-400'}`}>{icon}</span>
-      <Box className="flex-1 flex items-center h-full">{children}</Box>
-    </Box>
-    {error && errorMessage && (
-      <Text className="text-xs text-red-500 mt-1">{errorMessage}</Text>
-    )}
-  </Box>
-);
-
-const customSelectStyles = {
-  control: (styles: any) => ({
-    ...styles,
-    backgroundColor: 'white',
-    minHeight: 40,
-    border: 'none',
-    boxShadow: 'none',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  }),
-  option: (styles: any, { isDisabled, isFocused, isSelected }: any) => {
-    const color = '#6B7280';
-    let backgroundColor = '';
-    if (isDisabled) backgroundColor = '';
-    else if (isSelected) backgroundColor = color;
-    else if (isFocused) backgroundColor = 'rgba(107,114,128,0.1)';
-    let optionColor = color;
-    if (isDisabled) optionColor = '#ccc';
-    else if (isSelected) optionColor = 'white';
-    return {
-      ...styles,
-      backgroundColor,
-      color: optionColor,
-      cursor: isDisabled ? 'not-allowed' : 'default',
-      ':active': {
-        ...styles[':active'],
-        backgroundColor: !isDisabled && (isSelected ? color : 'rgba(107,114,128,0.2)'),
-      },
-    };
-  },
-};
 
 
-const genderOptions = [
-  { value: "Nam", label: "Nam" },
-  { value: "Nữ", label: "Nữ" },
-  { value: "Khác", label: "Khác" },
-];
-const ethnicityOptions = [
-  { value: "Kinh", label: "Kinh" },
-  { value: "Tày", label: "Tày" },
-  { value: "Thái", label: "Thái" },
-  { value: "Khác", label: "Khác" },
-];
-const educationLevelOptions = [
-  { value: "Trung học", label: "Trung học" },
-  { value: "Cao đẳng", label: "Cao đẳng" },
-  { value: "Đại học", label: "Đại học" },
-  { value: "Sau đại học", label: "Sau đại học" },
-];
 
-const cmktLevelOptions = [
-  { value: "Sơ cấp", label: "Sơ cấp" },
-  { value: "Trung cấp", label: "Trung cấp" },
-  { value: "Cao cấp", label: "Cao cấp" },
-  { value: "Khác", label: "Khác" },
-];
-
-// Options for desired job field
-const desiredJobOptions = [
-  { value: "Kỹ sư phần mềm", label: "Kỹ sư phần mềm" },
-  { value: "Nhân viên kinh doanh", label: "Nhân viên kinh doanh" },
-  { value: "Kế toán", label: "Kế toán" },
-  { value: "Thiết kế đồ họa", label: "Thiết kế đồ họa" },
-  { value: "Quản trị dự án", label: "Quản trị dự án" },
-  { value: "Nhân sự", label: "Nhân sự" },
-  { value: "Khác", label: "Khác" }
-];
 
 // Custom bottom sheet select component
 
+
 const HomePage: React.FC = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    confirmPassword: "",
-    fullName: "",
-    idCard: "",
-    phone: "",
-    email: "",
-    ethnicity: "",
-    address: "",
-    major: "",
-    birthDate: undefined as Date | undefined,
-    gender: "",
-    issueDate: undefined as Date | undefined,
-    issuePlace: "",
-    educationLevel: "",
-    cmktLevel: "",
-    desiredJob: [] as string[],
-    school: "",
-  });
-  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
-
-
-  const handleInputChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      let value = e.target.value;
-      if (field === "phone") {
-        // Only allow numbers
-        value = value.replace(/\D/g, "");
-      }
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    };
-
-
-  const handleInputBlur = (field: string) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const handleSelectChange = (field: string) => (value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleDateChange = (field: string) => (date: Date | undefined) => {
-    setFormData((prev) => ({ ...prev, [field]: date }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-  };
+  const {
+    formData,
+    setFormData,
+    touched,
+    setTouched,
+    handleInputChange,
+    handleInputBlur,
+    handleSelectChange,
+    handleDateChange,
+    handleSubmit,
+  } = useRegisterForm();
 
   return (
     <Page className="bg-gray-100 p-4 min-h-screen">
-      <Box className="w-full max-w-7xl bg-white rounded-lg shadow-lg p-6 sm:p-8 mx-auto">
+      <Box className="card-section">
         {/* Title */}
         <Box
           className="flex justify-center mb-6 sm:mb-8"
@@ -356,7 +99,7 @@ const HomePage: React.FC = () => {
                 onChange={handleInputChange("username")}
                 onBlur={handleInputBlur("username")}
                 label={undefined}
-                className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                className="input-field"
               />
             </InputBox>
 
@@ -373,7 +116,7 @@ const HomePage: React.FC = () => {
                 onChange={handleInputChange("password")}
                 onBlur={handleInputBlur("password")}
                 label={undefined}
-                className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                className="input-field"
               />
             </InputBox>
 
@@ -390,7 +133,7 @@ const HomePage: React.FC = () => {
                 onChange={handleInputChange("confirmPassword")}
                 onBlur={handleInputBlur("confirmPassword")}
                 label={undefined}
-                className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                className="input-field"
               />
             </InputBox>
           </Box>
@@ -415,7 +158,7 @@ const HomePage: React.FC = () => {
                   onChange={handleInputChange("fullName")}
                   onBlur={handleInputBlur("fullName")}
                   label={undefined}
-                  className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                  className="input-field"
                 />
               </InputBox>
 
@@ -457,7 +200,7 @@ const HomePage: React.FC = () => {
                   onChange={handleInputChange("idCard")}
                   onBlur={handleInputBlur("idCard")}
                   label={undefined}
-                  className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                  className="input-field"
                 />
               </InputBox>
 
@@ -482,7 +225,7 @@ const HomePage: React.FC = () => {
                   onChange={handleInputChange("issuePlace")}
                   onBlur={handleInputBlur("issuePlace")}
                   label={undefined}
-                  className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                  className="input-field"
                 />
               </InputBox>
             </div>
@@ -501,7 +244,7 @@ const HomePage: React.FC = () => {
                   onChange={handleInputChange("phone")}
                   onBlur={handleInputBlur("phone")}
                   label={undefined}
-                  className="border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400"
+                  className="input-field"
                   inputMode="numeric"
                   pattern="[0-9]*"
                   maxLength={15}
@@ -621,7 +364,7 @@ const HomePage: React.FC = () => {
               </InputBox>
 
               <InputBox label="Ngành nghề mong muốn" icon={<Briefcase size={18} />}>
-                <CustomBottomSheetSelect
+                <MultiSelect
                   options={desiredJobList}
                   value={formData.desiredJob}
                   onChange={(selected) => handleSelectChange("desiredJob")(selected)}
@@ -640,15 +383,15 @@ const HomePage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
               <Button
                 variant="primary"
-                className="bg-green-500 hover:bg-green-600 rounded-md h-12 px-6 text-sm text-white"
+                className="btn-primary"
                 htmlType="submit"
               >
                 Đăng Ký Ngay
               </Button>
-              <Button className="bg-sky-600 hover:bg-sky-700 rounded-md h-12 px-6 text-sm text-white">
+              <Button className="btn-sky">
                 Đăng Ký Cho Nhà Tuyển Dụng
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 rounded-md h-12 px-6 text-sm text-white">
+              <Button className="btn-blue">
                 Quay Lại Đăng Nhập
               </Button>
             </div>
