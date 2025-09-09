@@ -9,6 +9,10 @@ module.exports = {
       fontFamily: {
         mono: ["Roboto Mono", "monospace"],
       },
+      spacing: {
+        st: "var(--safe-top)",
+        sb: "var(--safe-bottom)",
+      },
     },
   },
 };

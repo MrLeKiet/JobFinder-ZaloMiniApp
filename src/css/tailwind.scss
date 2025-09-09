@@ -16,7 +16,7 @@
 		@apply flex items-center border rounded-md px-3 min-h-[50px] h-[50px];
 	}
 	.input-field {
-		@apply border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400;
+		@apply border-none shadow-none focus:ring-0 bg-transparent placeholder-gray-400 pl-[4px];
 	}
 	.error-text {
 		@apply text-xs text-red-500 mt-1;
