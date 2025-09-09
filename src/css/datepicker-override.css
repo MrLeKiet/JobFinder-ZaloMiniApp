@@ -1,0 +1,5 @@
+/* Custom override for zmp-ui DatePicker border */
+.zaui-date-picker, .zaui-date-picker input, .zaui-date-picker .zaui-input {
+  border: none !important;
+  box-shadow: none !important;
+}
